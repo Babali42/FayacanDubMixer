@@ -6,18 +6,22 @@ import { Service } from "typedi";
 @Service()
 class Game {
     private renderer: THREE.WebGLRenderer;
+    private scene: THREE.Scene;
+    private camera: THREE.PerspectiveCamera;
+    private cube: THREE.Mesh;
+    private controls: OrbitControls;
     
 
     createScene() : void {
-        const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-        camera.position.z = 2
+        this.scene = new THREE.Scene()
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+        this.camera.position.z = 2
 
         this.renderer = new THREE.WebGLRenderer()
         this.renderer.setSize(window.innerWidth, window.innerHeight)
         document.body.appendChild(this.renderer.domElement)
 
-        const controls = new OrbitControls(camera, this.renderer.domElement)
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
         const geometry = new THREE.BoxGeometry()
         const material = new THREE.MeshBasicMaterial({
@@ -25,30 +29,34 @@ class Game {
             wireframe: true,
         })
 
-        const cube = new THREE.Mesh(geometry, material)
-        scene.add(cube)
+        this.cube = new THREE.Mesh(geometry, material)
+        this.scene.add(this.cube)
 
         window.addEventListener('resize', onWindowResize, false)
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight
-            camera.updateProjectionMatrix()
+            this.camera.aspect = window.innerWidth / window.innerHeight
+            this.camera.updateProjectionMatrix()
             this.renderer.setSize(window.innerWidth, window.innerHeight)
             this.render()
         }
     }
 
-    run() : void {
-        requestAnimationFrame(run)
+    run(){
+        
+        //requestAnimationFrame(this.run)
+        requestAnimationFrame(()=>this.run());
 
-    cube.rotation.x += 0.01
-    cube.rotation.y += 0.01
+        this.cube.rotation.x += 0.01
+        this.cube.rotation.y += 0.01
 
-    controls.update()
+        this.controls.update()
 
-    render()
+        this.render()
     }
 
     render() : void {
-    this.renderer.render(scene, camera)
+    this.renderer.render(this.scene, this.camera)
     }
 }
+
+export default Game;
