@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Service } from "typedi";
+import SoundService from './services/sound';
 
 
 @Service()
@@ -10,6 +11,10 @@ class Game {
     private camera: THREE.PerspectiveCamera;
     private cube: THREE.Mesh;
     private controls: OrbitControls;
+
+    constructor(private soundService:SoundService){
+        soundService.Log("Dependency injection is ok");
+    }
     
 
     createScene() : void {
@@ -42,8 +47,6 @@ class Game {
     }
 
     run(){
-        
-        //requestAnimationFrame(this.run)
         requestAnimationFrame(()=>this.run());
 
         this.cube.rotation.x += 0.01
