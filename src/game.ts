@@ -18,21 +18,21 @@ class Game {
     
 
     createScene() : void {
-        this.scene = new THREE.Scene()
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-        this.camera.position.z = 2
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.z = 2;
 
-        this.renderer = new THREE.WebGLRenderer()
-        this.renderer.setSize(window.innerWidth, window.innerHeight)
-        document.body.appendChild(this.renderer.domElement)
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(this.renderer.domElement);
 
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-        const geometry = new THREE.BoxGeometry()
+        const geometry = new THREE.BoxGeometry();
         const material = new THREE.MeshBasicMaterial({
             color: 0x00ff00,
             wireframe: true,
-        })
+        });
 
         this.cube = new THREE.Mesh(geometry, material)
         this.scene.add(this.cube)
