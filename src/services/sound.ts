@@ -48,12 +48,15 @@ class SoundService{
         document.getElementById('number-sounds-loaded').innerHTML = (Math.trunc(this.numberLoaded * 100 / this.numberTotalToLoad)).toString();
         if(this.numberLoaded >= this.numberTotalToLoad){
             console.log("yes c'est frais");
-          var button = document.getElementById('close-modal');
-          //button.disabled = false;
-          button.classList.remove("button-disabled");
-          var button = document.getElementById('tuto-modal');
-          //button.disabled = false;
-          button.classList.remove("button-disabled");
+          var closeModalButton = document.getElementById('close-modal');
+          //@ts-ignore
+          closeModalButton.disabled = false;
+          closeModalButton.classList.remove("button-disabled");
+
+          var tutoModalButton = document.getElementById('tuto-modal');
+          //@ts-ignore
+          tutoModalButton.disabled = false;
+          tutoModalButton.classList.remove("button-disabled");
           //soundSetting();
         }
       }
