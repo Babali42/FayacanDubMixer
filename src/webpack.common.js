@@ -1,4 +1,6 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
     entry: './src/index.ts',
@@ -19,6 +21,16 @@ module.exports = {
     },
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, '../../dist/client'),
-    }
+        path: path.resolve(__dirname, '../dist'),
+    },
+    plugins: [
+      new CopyPlugin({
+          patterns: [
+              { from: "public" },
+          ],
+      }),
+      new HtmlWebpackPlugin({
+        template: "!!handlebars-loader!src/index.hbs",
+      }),
+    ],
 };
