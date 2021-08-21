@@ -5,7 +5,8 @@
   "scripts": {
     "build": "webpack --config ./src/webpack.prod.js",
     "dev": "webpack serve --config ./src/webpack.dev.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "npm run build && gh-pages -d dist -b main"
   },
   "author": "Sean Bradley",
   "license": "ISC",
