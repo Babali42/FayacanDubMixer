@@ -24,13 +24,7 @@ class SoundService {
     pist_5_bass_lowPassFilter: Pizzicato.Effects.LowPassFilter;
     pist_6_sub_bass_lowPassFilter: Pizzicato.Effects.LowPassFilter;
     analyser: Pizzicato.Analyser;
-    dataArray: Pizzicato.dataArray;
-
-    constructor(){
-        this.analyser = Pizzicato.context.createAnalyser();
-        this.analyser.fftSize = 2048;
-        this.dataArray = new Uint8Array(this.analyser.fftSize);
-    }
+    dataArray: any;
 
     LoadSounds(): void {
         this.pist_0_Transition = this.LoadSound("0_transitions");
@@ -119,7 +113,6 @@ class SoundService {
             var data = new Uint8Array(3 * size);
 
             for (var i = 0; i < size; i++) {
-
                 var r = this.dataArray[i];
                 var g = this.dataArray[i];
                 var b = this.dataArray[i];
@@ -129,7 +122,6 @@ class SoundService {
                 data[stride] = r;
                 data[stride + 1] = g;
                 data[stride + 2] = b;
-
             }
 
             return data;
@@ -185,21 +177,24 @@ class SoundService {
         this.pist_6_sub_bass.addEffect(this.pist_6_sub_bass_lowPassFilter);
         this.pist_4_toms.addEffect(this.pist_4_toms_flanger);
 
-        // this.pist_0_Transition.connect(analyser);
-        // this.pist_1_kick.connect(analyser);
-        // this.pist_1_1_kick_fx.connect(analyser);
-        // this.pist_2_snare.connect(analyser);
-        // this.pist_2_snare_fx.connect(analyser);
-        // this.pist_3_hat.connect(analyser);
-        // this.pist_3_1_hat_fx.connect(analyser);
-        // this.pist_4_toms.connect(analyser);
-        // this.pist_5_bass.connect(analyser);
-        // this.pist_6_sub_bass.connect(analyser);
-        // this.pist_7_skank.connect(analyser);
-        // this.pist_7_1_skank_fx.connect(analyser);
-        // this.pist_8_melodies.connect(analyser);
+        this.analyser = Pizzicato.context.createAnalyser();
+        this.analyser.fftSize = 2048;
+        this.dataArray = new Uint8Array(this.analyser.fftSize);
 
-        // this.analyser.connect(Pizzicato.context.destination);
+        this.pist_0_Transition.connect(this.analyser);
+        this.pist_1_kick.connect(this.analyser);
+        this.pist_1_1_kick_fx.connect(this.analyser);
+        this.pist_2_snare.connect(this.analyser);
+        this.pist_2_snare_fx.connect(this.analyser);
+        this.pist_3_hat.connect(this.analyser);
+        this.pist_3_1_hat_fx.connect(this.analyser);
+        this.pist_4_toms.connect(this.analyser);
+        this.pist_5_bass.connect(this.analyser);
+        this.pist_6_sub_bass.connect(this.analyser);
+        this.pist_7_skank.connect(this.analyser);
+        this.pist_7_1_skank_fx.connect(this.analyser);
+        this.pist_8_melodies.connect(this.analyser);
+        this.analyser.connect(Pizzicato.context.destination);
     }
 }
 
