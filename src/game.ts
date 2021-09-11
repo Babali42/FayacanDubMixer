@@ -4,6 +4,7 @@ import { Service } from "typedi";
 import SoundService from './services/sound';
 //@ts-ignore
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GlslShader, GlslVariable, GlslVariableMap } from 'webpack-glsl-minify'
 
 
 @Service()
@@ -20,10 +21,9 @@ class Game {
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
-    private numFilesLeft = 3;
-    private mixerShaderFragment: string;
-    private mixerShaderVertex: string;
-    private backgroundShader: string;
+    private mixerShaderFragment: GlslShader;
+    private mixerShaderVertex : GlslShader;
+    private backgroundShader: GlslShader;
     private uniformsBackground = null;
     private uniformsMixer = null;
 
@@ -59,17 +59,17 @@ class Game {
 
         this.renderer.autoClear = false;
 
+        this.mixerShaderFragment = require('../public/shaders/mixerShaderFragment.glsl') as GlslShader;
+        this.mixerShaderVertex = require('../public/shaders/mixerShaderVertex.glsl') as GlslShader;
+        this.backgroundShader = require('../public/shaders/backgroundShader.glsl') as GlslShader;
+
         this.AddLights();
         this.AddMixer();
         this.AddKnobs();
         this.AddFaders();
 
-        var loader = new THREE.FileLoader();
-        loader.load('shaders/mixerShaderFragment.glsl', data => { this.mixerShaderFragment = data.toString(); this.ShaderLoaded(); },);
-        loader.load('shaders/mixerShaderVertex.glsl', data => { this.mixerShaderVertex = data.toString(); this.ShaderLoaded(); },);
-        loader.load('shaders/backgroundShader.glsl', data => { this.backgroundShader = data.toString(); this.ShaderLoaded(); },);
-
         this.AddMixerShader();
+        this.AddBackgroundShader();
 
     }
 
@@ -132,15 +132,6 @@ class Game {
         renderer.setSize(width, height, false);
         return true;
     }
-
-    private ShaderLoaded(): void {
-        --this.numFilesLeft;
-        if (this.numFilesLeft === 0) {
-            this.AddMixerShader();
-            this.AddBackgroundShader();
-        }
-    }
-
 
     private AddMixer(): void {
         const gltfLoader = new GLTFLoader();
@@ -225,10 +216,9 @@ class Game {
             },
         };
 
-
         this.shaderMaterial = new THREE.ShaderMaterial({
-            vertexShader: this.mixerShaderVertex,
-            fragmentShader:this.mixerShaderFragment,
+            vertexShader: this.mixerShaderVertex.sourceCode,
+            fragmentShader:this.mixerShaderFragment.sourceCode,
             //@ts-ignore
             uniforms: this.uniformsMixer,
         });
@@ -262,7 +252,7 @@ class Game {
             },
         };
         const material = new THREE.ShaderMaterial({
-            fragmentShader: this.backgroundShader,
+            fragmentShader: this.backgroundShader.sourceCode,
             uniforms: this.uniformsBackground,
         });
         this.shadertoyScene.add(new THREE.Mesh(plane, material));
