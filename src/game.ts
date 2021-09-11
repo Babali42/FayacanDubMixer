@@ -21,9 +21,8 @@ class Game {
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
-    private mixerShaderFragment: GlslShader;
-    private mixerShaderVertex: GlslShader;
-    private backgroundShader: GlslShader;
+
+    
     private backgroundShaderUniforms = null;
     private mixerShaderUniforms = null;
 
@@ -31,7 +30,7 @@ class Game {
     planeScreen: THREE.Mesh;
 
     private actualTime = 0;
-    private goodOldTime = 0;
+    private previousTime = 0;
 
     constructor(private soundService: SoundService) {
         soundService.LoadSounds();
@@ -57,9 +56,7 @@ class Game {
 
         this.renderer.autoClear = false;
 
-        this.mixerShaderFragment = require('./shaders/mixerShaderFragment.glsl') as GlslShader;
-        this.mixerShaderVertex = require('./shaders/mixerShaderVertex.glsl') as GlslShader;
-        this.backgroundShader = require('./shaders/backgroundShader.glsl') as GlslShader;
+        
 
         this.AddLights();
         this.AddMixer();
@@ -78,7 +75,7 @@ class Game {
 
     render(): void {
         let time = window.performance.now();
-        this.actualTime += (time - this.goodOldTime) * 0.001; // convert to seconds
+        this.actualTime += (time - this.previousTime) * 0.001; // convert to seconds
 
         if (this.ResizeRendererToDisplaySize(this.renderer)) {
             const canvas = this.renderer.domElement;
@@ -107,7 +104,7 @@ class Game {
         }
 
         this.renderer.render(this.scene, this.camera);
-        this.goodOldTime = time;
+        this.previousTime = time;
     }
 
     PlaySound(): void {
@@ -211,9 +208,12 @@ class Game {
             },
         };
 
+        let mixerShaderFragment = require('./shaders/mixerShaderFragment.glsl') as GlslShader;
+        let mixerShaderVertex = require('./shaders/mixerShaderVertex.glsl') as GlslShader;
+
         this.shaderMaterial = new THREE.ShaderMaterial({
-            vertexShader: this.mixerShaderVertex.sourceCode,
-            fragmentShader: this.mixerShaderFragment.sourceCode,
+            vertexShader: mixerShaderVertex.sourceCode,
+            fragmentShader: mixerShaderFragment.sourceCode,
             //@ts-ignore
             uniforms: this.mixerShaderUniforms,
         });
@@ -238,6 +238,8 @@ class Game {
             0, // far
         );
 
+        let backgroundShader = require('./shaders/backgroundShader.glsl') as GlslShader;
+
         this.backgroundShaderUniforms = {
             iTime: {
                 value: 0
@@ -247,7 +249,7 @@ class Game {
             },
         };
         const material = new THREE.ShaderMaterial({
-            fragmentShader: this.backgroundShader.sourceCode,
+            fragmentShader: backgroundShader.sourceCode,
             uniforms: this.backgroundShaderUniforms,
         });
         this.shadertoyScene.add(new THREE.Mesh(plane, material));
