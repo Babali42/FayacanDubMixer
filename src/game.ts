@@ -20,7 +20,7 @@ class Game {
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
-    private numFilesLeft = 1;
+    private numFilesLeft = 3;
     private mixerShaderFragment: string;
     private mixerShaderVertex: string;
     private backgroundShader: string;
@@ -49,7 +49,7 @@ class Game {
         this.renderer = new THREE.WebGLRenderer({
             //@ts-ignore
             canvas,
-            antialias: false
+            antialias: true
         });
 
         this.controls = new OrbitControls(this.camera, canvas);
@@ -65,8 +65,8 @@ class Game {
         this.AddFaders();
 
         var loader = new THREE.FileLoader();
-        // loader.load('shaders/mixerShaderFragment.glsl', data => { this.mixerShaderFragment = data.toString(); this.ShaderLoaded(); },);
-        // loader.load('shaders/mixerShaderVertex.glsl', data => { this.mixerShaderVertex = data.toString(); this.ShaderLoaded(); },);
+        loader.load('shaders/mixerShaderFragment.glsl', data => { this.mixerShaderFragment = data.toString(); this.ShaderLoaded(); },);
+        loader.load('shaders/mixerShaderVertex.glsl', data => { this.mixerShaderVertex = data.toString(); this.ShaderLoaded(); },);
         loader.load('shaders/backgroundShader.glsl', data => { this.backgroundShader = data.toString(); this.ShaderLoaded(); },);
 
         this.AddMixerShader();
@@ -136,7 +136,7 @@ class Game {
     private ShaderLoaded(): void {
         --this.numFilesLeft;
         if (this.numFilesLeft === 0) {
-            //this.AddMixerShader();
+            this.AddMixerShader();
             this.AddBackgroundShader();
         }
     }
@@ -227,49 +227,8 @@ class Game {
 
 
         this.shaderMaterial = new THREE.ShaderMaterial({
-            vertexShader: `varying vec2 vUv;
-        
-            void main() {
-                vUv = uv;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-            }`,
-            fragmentShader: `
-            #include <common>
-            uniform vec3 iResolution;
-            uniform float iTime;
-            uniform sampler2D waveform;
-            vec3 purpleBackground = vec3(96./255., 63./255., 168./255.);
-            vec3 yellowFont = vec3(255./255., 249./255., 81./255.);
-            vec3 greenMisc = vec3(77./255., 226./255., 160./255.);
-            vec3 orangeMisc = vec3(255./255., 249./255., 81./255.);
-            void mainImage( out vec4 fragColor, in vec2 fragCoord )
-            {
-                vec2 uv = fragCoord/iResolution.xy;
-                
-                vec4 tex = texture2D(waveform, vec2(uv.x,0.5));
-                if(uv.y>tex.x && uv.y < 0.5 || uv.y<tex.x && uv.y > 0.5){
-                    if(mod(iTime,5.) > 2.5){
-                        fragColor = vec4(greenMisc, 1.);
-                    }else{
-                        fragColor = vec4(yellowFont, 1.);
-                    }
-                    if(mod(iTime,10.) < 0.5 ){
-                        fragColor = vec4(purpleBackground, 1.);
-                    }
-                    
-                }else{
-                    if(mod(iTime,10.) < 0.5 ){
-                        fragColor = vec4(orangeMisc, 1.);
-                    }else{
-                        fragColor = vec4(purpleBackground, 1.);
-                    }
-                }
-            }
-            varying vec2 vUv;
-            void main() {
-                mainImage(gl_FragColor, vUv * iResolution.xy);
-            }
-            `,
+            vertexShader: this.mixerShaderVertex,
+            fragmentShader:this.mixerShaderFragment,
             //@ts-ignore
             uniforms: this.uniformsMixer,
         });
