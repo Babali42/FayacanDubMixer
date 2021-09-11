@@ -4,7 +4,7 @@ import { Service } from "typedi";
 import SoundService from './services/sound';
 //@ts-ignore
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { GlslShader, GlslVariable, GlslVariableMap } from 'webpack-glsl-minify'
+import { GlslShader } from 'webpack-glsl-minify'
 
 
 @Service()
@@ -22,18 +22,16 @@ class Game {
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
     private mixerShaderFragment: GlslShader;
-    private mixerShaderVertex : GlslShader;
+    private mixerShaderVertex: GlslShader;
     private backgroundShader: GlslShader;
-    private uniformsBackground = null;
-    private uniformsMixer = null;
+    private backgroundShaderUniforms = null;
+    private mixerShaderUniforms = null;
 
     private shaderMaterial: THREE.ShaderMaterial;
     planeScreen: THREE.Mesh;
 
     private actualTime = 0;
     private goodOldTime = 0;
-
-    
 
     constructor(private soundService: SoundService) {
         soundService.LoadSounds();
@@ -59,9 +57,9 @@ class Game {
 
         this.renderer.autoClear = false;
 
-        this.mixerShaderFragment = require('../public/shaders/mixerShaderFragment.glsl') as GlslShader;
-        this.mixerShaderVertex = require('../public/shaders/mixerShaderVertex.glsl') as GlslShader;
-        this.backgroundShader = require('../public/shaders/backgroundShader.glsl') as GlslShader;
+        this.mixerShaderFragment = require('./shaders/mixerShaderFragment.glsl') as GlslShader;
+        this.mixerShaderVertex = require('./shaders/mixerShaderVertex.glsl') as GlslShader;
+        this.backgroundShader = require('./shaders/backgroundShader.glsl') as GlslShader;
 
         this.AddLights();
         this.AddMixer();
@@ -85,8 +83,7 @@ class Game {
         if (this.ResizeRendererToDisplaySize(this.renderer)) {
             const canvas = this.renderer.domElement;
             this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-            this.camera.updateProjectionMatrix();
-            //this.uniformsBackground.iResolution.value.set(canvas.width, canvas.height, 1);
+            this.camera.updateProjectionMatrix(); 
         }
 
         var data = this.soundService.UpdateAnalizer();
@@ -98,17 +95,17 @@ class Game {
 
             var texture = new THREE.DataTexture(data, awidth, aheight, THREE.RGBFormat);
 
-            this.uniformsMixer.iTime.value = this.actualTime;
-            this.uniformsMixer.iResolution.value.set(20, 10, 1);
-            this.uniformsMixer.waveform.value = texture;
+            this.mixerShaderUniforms.iTime.value = this.actualTime;
+            this.mixerShaderUniforms.iResolution.value.set(20, 10, 1);
+            this.mixerShaderUniforms.waveform.value = texture;
         }
 
-        if(this.uniformsBackground){
-            this.uniformsBackground.iTime.value = this.actualTime;
-            this.uniformsBackground.iResolution.value.set(this.renderer.domElement.width, this.renderer.domElement.height, 1);
+        if (this.backgroundShaderUniforms) {
+            this.backgroundShaderUniforms.iTime.value = this.actualTime;
+            this.backgroundShaderUniforms.iResolution.value.set(this.renderer.domElement.width, this.renderer.domElement.height, 1);
             this.renderer.render(this.shadertoyScene, this.shadertoyCamera);
         }
-        
+
         this.renderer.render(this.scene, this.camera);
         this.goodOldTime = time;
     }
@@ -137,8 +134,6 @@ class Game {
         const gltfLoader = new GLTFLoader();
         var root;
         gltfLoader.load('models/mixer.glb', (gltf) => {
-
-
             root = gltf.scene;
             root.position.set(0, -3.75, 0);
             this.scene.add(root);
@@ -203,7 +198,7 @@ class Game {
     }
 
     private AddMixerShader(): void {
-        this.uniformsMixer = {
+        this.mixerShaderUniforms = {
             iTime: {
                 value: 0
             },
@@ -218,9 +213,9 @@ class Game {
 
         this.shaderMaterial = new THREE.ShaderMaterial({
             vertexShader: this.mixerShaderVertex.sourceCode,
-            fragmentShader:this.mixerShaderFragment.sourceCode,
+            fragmentShader: this.mixerShaderFragment.sourceCode,
             //@ts-ignore
-            uniforms: this.uniformsMixer,
+            uniforms: this.mixerShaderUniforms,
         });
 
         this.planeScreen = new THREE.Mesh(new THREE.PlaneBufferGeometry(15, 10, 8, 8), this.shaderMaterial);
@@ -243,7 +238,7 @@ class Game {
             0, // far
         );
 
-        this.uniformsBackground = {
+        this.backgroundShaderUniforms = {
             iTime: {
                 value: 0
             },
@@ -253,7 +248,7 @@ class Game {
         };
         const material = new THREE.ShaderMaterial({
             fragmentShader: this.backgroundShader.sourceCode,
-            uniforms: this.uniformsBackground,
+            uniforms: this.backgroundShaderUniforms,
         });
         this.shadertoyScene.add(new THREE.Mesh(plane, material));
     }
