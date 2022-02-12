@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Service } from "typedi";
 import SoundService from './services/sound';
-//@ts-ignore
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GlslShader } from 'webpack-glsl-minify'
 
@@ -16,7 +15,7 @@ class Game {
     private shadertoyCamera: THREE.OrthographicCamera;
     private controls: OrbitControls;
     private faders = [];
-    private potards = [];
+    private knobs = [];
 
     //3D model variables
     private spaceBetweenFaders = 11.75;
@@ -83,14 +82,14 @@ class Game {
             this.camera.updateProjectionMatrix(); 
         }
 
-        var data = this.soundService.UpdateAnalizer();
+        let data = this.soundService.UpdateAnalizer();
 
         if (data) {
 
-            var awidth = 2048;
-            var aheight = 1;
+            const width = 2048;
+            const height = 1;
 
-            var texture = new THREE.DataTexture(data, awidth, aheight, THREE.RGBFormat);
+            const texture = new THREE.DataTexture(data, width, height, THREE.RGBFormat);
 
             this.mixerShaderUniforms.iTime.value = this.actualTime;
             this.mixerShaderUniforms.iResolution.value.set(20, 10, 1);
@@ -129,7 +128,7 @@ class Game {
 
     private AddMixer(): void {
         const gltfLoader = new GLTFLoader();
-        var root;
+        let root;
         gltfLoader.load('models/mixer.glb', (gltf) => {
             root = gltf.scene;
             root.position.set(0, -3.75, 0);
@@ -161,13 +160,13 @@ class Game {
         light.position.set(5, 10, 2);
         this.scene.add(light);
 
-        var lightAmbient = new THREE.AmbientLight(0xF0F0F0, 1); // soft white light
+        const lightAmbient = new THREE.AmbientLight(0xF0F0F0, 1); // soft white light
         this.scene.add(lightAmbient);
     }
 
     private AddFaders(): void {
         const gltfLoader = new GLTFLoader();
-        var newFader;
+        let newFader;
         gltfLoader.load('models/fader.glb', (gltf) => {
             for (let i = 0; i <= 7; i++) {
                 newFader = gltf.scene.clone();
@@ -181,15 +180,15 @@ class Game {
 
     private AddKnobs(): void {
         const gltfLoader = new GLTFLoader();
-        var newPotard;
-        gltfLoader.load('models/potard.glb', (gltf) => {
+        let newKnob;
+        gltfLoader.load('models/knob.glb', (gltf) => {
             for (let i = 0; i <= 7; i++) {
-                newPotard = gltf.scene.clone();
-                newPotard.name = i + 1;
-                newPotard.position.set(-45.75 + this.faderWidth / 2 + this.spaceBetweenFaders * i, -1, -19);
-                newPotard.rotation.set(5.925, 0, 0);
-                this.potards.push(newPotard);
-                this.scene.add(newPotard);
+                newKnob = gltf.scene.clone();
+                newKnob.name = i + 1;
+                newKnob.position.set(-45.75 + this.faderWidth / 2 + this.spaceBetweenFaders * i, -1, -19);
+                newKnob.rotation.set(5.925, 0, 0);
+                this.knobs.push(newKnob);
+                this.scene.add(newKnob);
             }
         });
     }
@@ -219,7 +218,7 @@ class Game {
         });
 
         this.planeScreen = new THREE.Mesh(new THREE.PlaneBufferGeometry(15, 10, 8, 8), this.shaderMaterial);
-        var y = -1;
+        let y = -1;
         this.planeScreen.position.set(51.5, y, -19);
         this.planeScreen.rotation.set(3 * 3.14 / 2 + 5.925, 0, 0);
         this.scene.add(this.planeScreen);
