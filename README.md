@@ -1,8 +1,7 @@
-based on https://github.com/Sean-Bradley/Three.js-TypeScript-Boilerplate
+# Fayacan Son Dub Mixer
 
+- Concept de Fayacan
+- Table de mixage de musique dub
+- Pour apprendre comment fonctionne le mixage
 
-Simplifié pour mon utilisation personnel
-
-
-Si utilisation dans GitPod on peux utiliser la commande npm run dev -- --public "$(gp url 3000 | sed 's+https://++'):443"
-pour debug et kiffer la kiffance
+![Drag Racing](appScreenshot.png)
