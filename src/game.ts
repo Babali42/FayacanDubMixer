@@ -20,7 +20,6 @@ class Game {
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
-
     
     private backgroundShaderUniforms = null;
     private mixerShaderUniforms = null;
@@ -41,9 +40,8 @@ class Game {
         this.camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100);
         this.camera.position.set(1.3250406408110678, 104.88500303402239, 20.99895565347296);
 
-        const canvas = document.getElementById("c");
+        const canvas = document.getElementById("c") as HTMLCanvasElement;
         this.renderer = new THREE.WebGLRenderer({
-            //@ts-ignore
             canvas,
             antialias: true
         });
@@ -82,18 +80,12 @@ class Game {
             this.camera.updateProjectionMatrix(); 
         }
 
-        let data = this.soundService.UpdateAnalizer();
+        let data = this.soundService.UpdateAnalyzer();
 
         if (data) {
-
-            const width = 2048;
-            const height = 1;
-
-            const texture = new THREE.DataTexture(data, width, height, THREE.RGBFormat);
-
             this.mixerShaderUniforms.iTime.value = this.actualTime;
             this.mixerShaderUniforms.iResolution.value.set(20, 10, 1);
-            this.mixerShaderUniforms.waveform.value = texture;
+            this.mixerShaderUniforms.waveform.value = new THREE.DataTexture(data, 1, 2048, THREE.RGBFormat);
         }
 
         if (this.backgroundShaderUniforms) {
@@ -127,10 +119,8 @@ class Game {
     }
 
     private AddMixer(): void {
-        const gltfLoader = new GLTFLoader();
-        let root;
-        gltfLoader.load('models/mixer.glb', (gltf) => {
-            root = gltf.scene;
+        new GLTFLoader().load('models/mixer.glb', (gltf) => {
+            const root = gltf.scene;
             root.position.set(0, -3.75, 0);
             this.scene.add(root);
             const box = new THREE.Box3().setFromObject(root);
@@ -165,13 +155,11 @@ class Game {
     }
 
     private AddFaders(): void {
-        const gltfLoader = new GLTFLoader();
-        let newFader;
-        gltfLoader.load('models/fader.glb', (gltf) => {
+        new GLTFLoader().load('models/fader.glb', (gltf) => {
             for (let i = 0; i <= 7; i++) {
-                newFader = gltf.scene.clone();
+                const newFader = gltf.scene.clone();
                 newFader.position.set(-45.75 + this.spaceBetweenFaders * i, 0, 1.2);
-                newFader.name = i + 1;
+                newFader.name = (i + 1).toString();
                 this.faders.push(newFader);
                 this.scene.add(newFader);
             }
@@ -179,12 +167,10 @@ class Game {
     }
 
     private AddKnobs(): void {
-        const gltfLoader = new GLTFLoader();
-        let newKnob;
-        gltfLoader.load('models/knob.glb', (gltf) => {
+        new GLTFLoader().load('models/knob.glb', (gltf) => {
             for (let i = 0; i <= 7; i++) {
-                newKnob = gltf.scene.clone();
-                newKnob.name = i + 1;
+                const newKnob = gltf.scene.clone();
+                newKnob.name = (i + 1).toString();
                 newKnob.position.set(-45.75 + this.faderWidth / 2 + this.spaceBetweenFaders * i, -1, -19);
                 newKnob.rotation.set(5.925, 0, 0);
                 this.knobs.push(newKnob);
@@ -213,7 +199,6 @@ class Game {
         this.shaderMaterial = new THREE.ShaderMaterial({
             vertexShader: mixerShaderVertex.sourceCode,
             fragmentShader: mixerShaderFragment.sourceCode,
-            //@ts-ignore
             uniforms: this.mixerShaderUniforms,
         });
 
@@ -228,14 +213,7 @@ class Game {
         this.shadertoyScene = new THREE.Scene();
         const plane = new THREE.PlaneBufferGeometry(2, 2);
 
-        this.shadertoyCamera = new THREE.OrthographicCamera(
-            -1, // left
-            1, // right
-            1, // top
-            -1, // bottom
-            -1, // near,
-            0, // far
-        );
+        this.shadertoyCamera = new THREE.OrthographicCamera(-1,1, 1, -1, -1, 0);
 
         let backgroundShader = require('./shaders/backgroundShader.glsl') as GlslShader;
 
