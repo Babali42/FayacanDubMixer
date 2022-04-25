@@ -80,12 +80,13 @@ class Game {
             this.camera.updateProjectionMatrix(); 
         }
 
-        let data = this.soundService.UpdateAnalyzer();
+        const data = this.soundService.UpdateAnalyzer();
 
         if (data) {
+            const texture = new THREE.DataTexture(data, 2048, 1, THREE.RGBFormat);
             this.mixerShaderUniforms.iTime.value = this.actualTime;
             this.mixerShaderUniforms.iResolution.value.set(20, 10, 1);
-            this.mixerShaderUniforms.waveform.value = new THREE.DataTexture(data, 1, 2048, THREE.RGBFormat);
+            this.mixerShaderUniforms.waveform.value = texture;
         }
 
         if (this.backgroundShaderUniforms) {
