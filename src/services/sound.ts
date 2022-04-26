@@ -140,21 +140,19 @@ class SoundService {
 
     private loadIncrease(): void {
         this.numberLoaded++;
-
         document.getElementById('number-sounds-loaded').innerHTML = (Math.trunc(this.numberLoaded * 100 / this.numberTotalToLoad)).toString();
-        if (this.numberLoaded >= this.numberTotalToLoad) {
-            const closeModalButton = document.getElementById('close-modal');
-            //@ts-ignore
-            closeModalButton.disabled = false;
-            closeModalButton.classList.remove("button-disabled");
-
-            const tutorialModalButton = document.getElementById('tutorial-modal');
-            //@ts-ignore
-            tutorialModalButton.disabled = false;
-            tutorialModalButton.classList.remove("button-disabled");
-
-            this.setSounds();
-        }
+        
+        if (this.numberLoaded < this.numberTotalToLoad)
+            return;
+        const closeModalButton = document.getElementById('close-modal');
+        //@ts-ignore
+        closeModalButton.disabled = false;
+        closeModalButton.classList.remove("button-disabled");
+        const tutorialModalButton = document.getElementById('tutorial-modal');
+        //@ts-ignore
+        tutorialModalButton.disabled = false;
+        tutorialModalButton.classList.remove("button-disabled");
+        this.setSounds();
     }
 
     private setSounds(): void {

@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { Service } from "typedi";
+import {Mesh, Object3D, Vector3} from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {Service} from "typedi";
 import SoundService from './services/sound';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { GlslShader } from 'webpack-glsl-minify'
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import {GlslShader} from 'webpack-glsl-minify'
 
 
 @Service()
@@ -17,18 +18,33 @@ class Game {
     private faders = [];
     private knobs = [];
 
+    private raycaster = new THREE.Raycaster();
+
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
-    
+    private maxFaderPosition = new THREE.Vector3(0, 0.03, 0);
+    private minFaderPosition = new THREE.Vector3(0, -4.1, 16.9);
+    private minPotardAngle = 0;
+    private maxPotardAngle = 5.1;
+
     private backgroundShaderUniforms = null;
     private mixerShaderUniforms = null;
 
     private shaderMaterial: THREE.ShaderMaterial;
-    planeScreen: THREE.Mesh;
+
 
     private actualTime = 0;
     private previousTime = 0;
+
+    private selectedFader: Object3D;
+    private selectedKnob: Object3D;
+    private planeFaders: Mesh;
+    private planeScreen: Mesh;
+    private offset: Vector3;
+    private originalKnobMouseX: number;
+    private originalKnobRotation: number;
+    private knobSensitivity = 14;
 
     constructor(private soundService: SoundService) {
         soundService.LoadSounds();
@@ -39,6 +55,7 @@ class Game {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100);
         this.camera.position.set(1.3250406408110678, 104.88500303402239, 20.99895565347296);
+
 
         const canvas = document.getElementById("c") as HTMLCanvasElement;
         this.renderer = new THREE.WebGLRenderer({
@@ -53,7 +70,6 @@ class Game {
 
         this.renderer.autoClear = false;
 
-        
 
         this.AddLights();
         this.AddMixer();
@@ -77,7 +93,7 @@ class Game {
         if (this.ResizeRendererToDisplaySize(this.renderer)) {
             const canvas = this.renderer.domElement;
             this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
-            this.camera.updateProjectionMatrix(); 
+            this.camera.updateProjectionMatrix();
         }
 
         const data = this.soundService.UpdateAnalyzer();
@@ -117,6 +133,72 @@ class Game {
 
         renderer.setSize(width, height, false);
         return true;
+    }
+
+    MouseEventStart(mouseX: number, mouseY: number) {
+        const vector = new THREE.Vector3(mouseX, mouseY, 1);
+        vector.unproject(this.camera);
+        this.raycaster.set(this.camera.position, vector.sub(this.camera.position).normalize());
+        const intersectedFaders = this.raycaster.intersectObjects(this.faders, true);
+        if (intersectedFaders.length > 0) {
+            this.controls.enabled = false;
+            this.selectedFader = intersectedFaders[0].object;
+            let intersects = this.raycaster.intersectObject(this.planeFaders);
+            this.offset.copy(intersects[0].point).sub(this.planeFaders.position);
+            return;
+        }
+
+        const intersectedKnobs = this.raycaster.intersectObjects(this.knobs, true);
+        if (intersectedKnobs.length > 0) {
+            this.controls.enabled = false;
+            this.selectedKnob = intersectedKnobs[0].object.parent;
+            this.originalKnobMouseX = mouseX;
+            this.originalKnobRotation = this.selectedKnob.rotation.z;
+        }
+    }
+
+    MouseEventMove(mouseX: number, mouseY: number) {
+        const vector = new THREE.Vector3(mouseX, mouseY, 1);
+        vector.unproject(this.camera);
+        this.raycaster.set(this.camera.position, vector.sub(this.camera.position).normalize());
+        if (this.selectedFader) {
+            const intersects = this.raycaster.intersectObject(this.planeFaders);
+            if (intersects.length > 0) {
+                const oldXPosition = this.selectedFader.position.x;
+                
+                this.selectedFader.position.copy(intersects[0].point.sub(this.offset));
+                
+                if (this.selectedFader.position.z < 10)
+                    this.selectedFader.position.set(oldXPosition, Math.min(this.selectedFader.position.y, this.maxFaderPosition.y), Math.max(this.selectedFader.position.z, this.maxFaderPosition.z));
+                else
+                    this.selectedFader.position.set(oldXPosition, Math.max(this.selectedFader.position.y, this.minFaderPosition.y), Math.min(this.selectedFader.position.z, this.minFaderPosition.z));
+                
+                const faderLevel = ((this.selectedFader.position.z - this.minFaderPosition.z) / (this.maxFaderPosition.z - this.minFaderPosition.z));
+                //this.soundService.adjustVolume(this.selectedFader.parent.name, faderLevel);
+            }
+        } else if (this.selectedKnob) {
+            const deltaAngle = this.knobSensitivity * (mouseX - this.originalKnobMouseX) + this.originalKnobRotation;
+            
+            if (this.selectedKnob.rotation.z < 3.14)
+                this.selectedKnob.rotation.set(3.14 / 2, 0, Math.max(deltaAngle, this.minPotardAngle));
+            else
+                this.selectedKnob.rotation.set(3.14 / 2, 0, Math.min(deltaAngle, this.maxPotardAngle));
+            
+            const knobLevel = ((this.selectedKnob.rotation.z - this.minPotardAngle) / (this.maxPotardAngle - this.minPotardAngle));
+            //this.soundService.adjustEffect(this.selectedKnob.parent.name, potardLevel);
+        } else {
+            const intersects = this.raycaster.intersectObjects(this.faders, true);
+            if (intersects.length > 0) {
+                this.planeFaders.position.copy(intersects[0].object.position);
+            }
+        }
+    }
+
+    MouseEventEnd() {
+        this.controls.enabled = true;
+        this.selectedFader = null;
+        this.selectedKnob = null;
+        this.offset = new THREE.Vector3(0, 0, 0);
     }
 
     private AddMixer(): void {
@@ -165,6 +247,14 @@ class Game {
                 this.scene.add(newFader);
             }
         });
+
+        this.planeFaders = new THREE.Mesh(new THREE.PlaneBufferGeometry(130, 130, 8, 8), new THREE.MeshBasicMaterial({
+            color: 0xffffff
+        }));
+        this.planeFaders.position.set(0, -1, 0);
+        this.planeFaders.lookAt(0, 1, 0.5);
+        this.planeFaders.visible = false;
+        this.scene.add(this.planeFaders);
     }
 
     private AddKnobs(): void {
@@ -214,7 +304,7 @@ class Game {
         this.shadertoyScene = new THREE.Scene();
         const plane = new THREE.PlaneBufferGeometry(2, 2);
 
-        this.shadertoyCamera = new THREE.OrthographicCamera(-1,1, 1, -1, -1, 0);
+        this.shadertoyCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 0);
 
         let backgroundShader = require('./shaders/backgroundShader.glsl') as GlslShader;
 
