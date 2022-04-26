@@ -194,6 +194,64 @@ class SoundService {
         this.track_8_melodies.connect(this.analyser);
         this.analyser.connect(Pizzicato.context.destination);
     }
+
+    AdjustVolume(faderNumber : number, value : number) : void {
+        switch(faderNumber) {
+            case 1:
+                this.track_1_kick.volume = value;
+                break;
+            case 2:
+                this.track_2_snare.volume = value;
+                break;
+            case 3:
+                this.track_3_hat.volume = value;
+                break;
+            case 4:
+                this.track_4_toms.volume = value;
+                break;
+            case 5:
+                this.track_5_bass.volume = value;
+                break;
+            case 6:
+                this.track_6_sub_bass.volume = value;
+                break;
+            case 7:
+                this.track_7_skank.volume = value;
+                break;
+            case 8:
+                this.track_8_melodies.volume = value;
+                break;
+        }
+    }
+
+    AdjustEffect(knobNumber, value) : void {
+        switch(knobNumber) {
+            case 1:
+                this.track_1_1_kick_fx.volume = value;
+                break;
+            case 2:
+                this.track_2_snare_fx.volume = value;
+                break;
+            case 3:
+                this.track_3_1_hat_fx.volume = value;
+                break;
+            case 4:
+                this.track_4_toms_flanger.mix = value;
+                break;
+            case 5:
+                this.track_5_bass_lowPassFilter.frequency = value * 1000 + 100;
+                break;
+            case 6:
+                this.track_6_sub_bass_lowPassFilter.frequency = value * 600 + 100;
+                break;
+            case 7:
+                this.track_7_1_skank_fx.volume = value;
+                break;
+            case 8:
+                this.track_8_melodies_flanger.mix = value;
+                break;
+        }
+    }
 }
 
 export default SoundService;

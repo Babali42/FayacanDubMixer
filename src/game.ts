@@ -6,6 +6,7 @@ import SoundService from './services/sound';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import {GlslShader} from 'webpack-glsl-minify'
 
+const PI = 3.14;
 
 @Service()
 class Game {
@@ -14,29 +15,27 @@ class Game {
     private shadertoyScene: THREE.Scene;
     private camera: THREE.PerspectiveCamera;
     private shadertoyCamera: THREE.OrthographicCamera;
+    private raycaster = new THREE.Raycaster();
     private controls: OrbitControls;
     private faders = [];
     private knobs = [];
-
-    private raycaster = new THREE.Raycaster();
-
+    
     //3D model variables
     private spaceBetweenFaders = 11.75;
     private faderWidth = 5;
     private maxFaderPosition = new THREE.Vector3(0, 0.03, 0);
     private minFaderPosition = new THREE.Vector3(0, -4.1, 16.9);
-    private minPotardAngle = 0;
-    private maxPotardAngle = 5.1;
+    private minKnobAngle = 0;
+    private maxKnobAngle = 5.1;
 
     private backgroundShaderUniforms = null;
     private mixerShaderUniforms = null;
 
     private shaderMaterial: THREE.ShaderMaterial;
-
-
+    
     private actualTime = 0;
     private previousTime = 0;
-
+    
     private selectedFader: Object3D;
     private selectedKnob: Object3D;
     private planeFaders: Mesh;
@@ -78,7 +77,6 @@ class Game {
 
         this.AddMixerShader();
         this.AddBackgroundShader();
-
     }
 
     run() {
@@ -174,18 +172,18 @@ class Game {
                     this.selectedFader.position.set(oldXPosition, Math.max(this.selectedFader.position.y, this.minFaderPosition.y), Math.min(this.selectedFader.position.z, this.minFaderPosition.z));
                 
                 const faderLevel = ((this.selectedFader.position.z - this.minFaderPosition.z) / (this.maxFaderPosition.z - this.minFaderPosition.z));
-                //this.soundService.adjustVolume(this.selectedFader.parent.name, faderLevel);
+                this.soundService.AdjustVolume(parseInt(this.selectedFader.parent.name), faderLevel);
             }
         } else if (this.selectedKnob) {
             const deltaAngle = this.knobSensitivity * (mouseX - this.originalKnobMouseX) + this.originalKnobRotation;
             
-            if (this.selectedKnob.rotation.z < 3.14)
-                this.selectedKnob.rotation.set(3.14 / 2, 0, Math.max(deltaAngle, this.minPotardAngle));
+            if (this.selectedKnob.rotation.z < PI)
+                this.selectedKnob.rotation.set(PI / 2, 0, Math.max(deltaAngle, this.minKnobAngle));
             else
-                this.selectedKnob.rotation.set(3.14 / 2, 0, Math.min(deltaAngle, this.maxPotardAngle));
+                this.selectedKnob.rotation.set(PI / 2, 0, Math.min(deltaAngle, this.maxKnobAngle));
             
-            const knobLevel = ((this.selectedKnob.rotation.z - this.minPotardAngle) / (this.maxPotardAngle - this.minPotardAngle));
-            //this.soundService.adjustEffect(this.selectedKnob.parent.name, potardLevel);
+            const knobLevel = ((this.selectedKnob.rotation.z - this.minKnobAngle) / (this.maxKnobAngle - this.minKnobAngle));
+            this.soundService.AdjustEffect(parseInt(this.selectedKnob.parent.name), knobLevel);
         } else {
             const intersects = this.raycaster.intersectObjects(this.faders, true);
             if (intersects.length > 0) {
@@ -198,7 +196,7 @@ class Game {
         this.controls.enabled = true;
         this.selectedFader = null;
         this.selectedKnob = null;
-        this.offset = new THREE.Vector3(0, 0, 0);
+        this.offset = new THREE.Vector3;
     }
 
     private AddMixer(): void {
@@ -217,19 +215,14 @@ class Game {
 
             this.camera.updateProjectionMatrix();
 
-            // update the Trackball controls to handle the new size
             this.controls.maxDistance = boxSize * 10;
             this.controls.target.copy(boxCenter);
-            //controls.enablePan = false;
-            //controls.mouseButtons = { LEFT: THREE.MOUSE.RIGHT, MIDDLE: THREE.MOUSE.MIDDLE, RIGHT: THREE.MOUSE.LEFT };
             this.controls.update();
         });
     }
 
     private AddLights(): void {
-        const color = 0xFFFFFF;
-        const intensity = 1;
-        const light = new THREE.DirectionalLight(color, intensity);
+        const light = new THREE.DirectionalLight(0xFFFFFF, 1);
         light.position.set(5, 10, 2);
         this.scene.add(light);
 
@@ -294,9 +287,8 @@ class Game {
         });
 
         this.planeScreen = new THREE.Mesh(new THREE.PlaneBufferGeometry(15, 10, 8, 8), this.shaderMaterial);
-        let y = -1;
-        this.planeScreen.position.set(51.5, y, -19);
-        this.planeScreen.rotation.set(3 * 3.14 / 2 + 5.925, 0, 0);
+        this.planeScreen.position.set(51.5, -1, -19);
+        this.planeScreen.rotation.set(3 * PI / 2 + 5.925, 0, 0);
         this.scene.add(this.planeScreen);
     }
 

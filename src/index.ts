@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import { Container } from 'typedi';
 import Game from './game';
-import game from "./game";
 
 const buttonStart = document.getElementById('close-modal');
 const buttonCredit = document.getElementById('credit-modal-button');
@@ -28,27 +27,27 @@ const main = async () => {
   game.createScene();
   game.run();
 
-  buttonStart.addEventListener('click', e => {
+  buttonStart.addEventListener('click', () => {
     game.PlaySound();
     TogglePlayPauseToPlay();
     CloseModal();
   });
 
-  buttonCredit.addEventListener('click', e => toggleCreditModal());
+  buttonCredit.addEventListener('click', () => toggleCreditModal());
 
-  buttonCloseCredit.addEventListener('click', e => toggleCreditModal());
+  buttonCloseCredit.addEventListener('click', () => toggleCreditModal());
 
-  buttonPlay.addEventListener('click', e => {
+  buttonPlay.addEventListener('click', () => {
     TogglePlayPauseToPlay();
     game.PlaySound();
   });
 
-  buttonPause.addEventListener('click', e => {
+  buttonPause.addEventListener('click', () => {
     TogglePlayPauseToPause()
     game.PauseSound();
   });
 
-  openModal.addEventListener('click', e => {
+  openModal.addEventListener('click', () => {
     modal.removeAttribute("class");
     modal.classList.add("two");
     body.classList.add("modal-active");
@@ -66,8 +65,8 @@ main().catch(err => {
 });
 
 function toggleCreditModal() {
-  var creditModal = document.getElementById("creditModal");
-  var startModal = document.getElementById("startModal");
+  const creditModal = document.getElementById("creditModal");
+  const startModal = document.getElementById("startModal");
   if (creditModal.style.display === "none") {
     creditModal.style.display = "flex";
     startModal.style.display = "none";
@@ -100,15 +99,15 @@ function RedirectBlank(url) {
   a.click();
 }
 
-facebookLink.addEventListener('click', e => {
+facebookLink.addEventListener('click', () => {
   RedirectBlank("https://www.facebook.com/FayacanSon/");
 });
 
-youtubeLink.addEventListener('click', e => {
+youtubeLink.addEventListener('click', () => {
   RedirectBlank("https://www.youtube.com/channel/UCSGj18XL9iVpVZ4y7Rg3IEA");
 });
 
-soundcloudLink.addEventListener('click', e => {
+soundcloudLink.addEventListener('click', () => {
   RedirectBlank("https://soundcloud.com/user-683591571");
 });
 
