@@ -69,6 +69,7 @@ class Game {
         this.controls = new OrbitControls(this.camera, canvas);
 
         this.controls.enableRotate = false;
+        this.controls.enableZoom = true;
         this.controls.update();
 
         this.renderer.autoClear = false;
