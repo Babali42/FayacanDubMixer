@@ -8,6 +8,10 @@ import {GlslShader} from 'webpack-glsl-minify'
 
 const PI = 3.14;
 
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1)
+}
+
 @Service()
 class Game {
     private renderer: THREE.WebGLRenderer;
@@ -102,8 +106,8 @@ class Game {
             this.mixerShaderUniforms.iResolution.value.set(20, 10, 1);
             this.mixerShaderUniforms.waveform.value = texture;
         }
-
-        if (this.backgroundShaderUniforms) {
+        
+        if (this.backgroundShaderUniforms && !isMobileDevice()) {
             this.backgroundShaderUniforms.iTime.value = this.actualTime;
             this.backgroundShaderUniforms.iResolution.value.set(this.renderer.domElement.width, this.renderer.domElement.height, 1);
             this.renderer.render(this.shadertoyScene, this.shadertoyCamera);
@@ -197,6 +201,15 @@ class Game {
         this.selectedFader = null;
         this.selectedKnob = null;
         this.offset = new THREE.Vector3;
+    }
+    
+    TouchEventStart(mouseX: number, mouseY: number){
+        const vector = new Vector3(mouseX, mouseY, 1);
+        vector.unproject(this.camera);
+        this.raycaster.set(this.camera.position, vector.sub(this.camera.position).normalize());
+        const intersects = this.raycaster.intersectObject(this.planeFaders);
+        this.planeFaders.position.copy(intersects[0].point);
+        this.MouseEventStart(mouseX, mouseY);
     }
 
     private AddMixer(): void {
