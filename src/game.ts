@@ -198,6 +198,15 @@ class Game {
         this.selectedKnob = null;
         this.offset = new THREE.Vector3;
     }
+    
+    TouchEventStart(mouseX: number, mouseY: number){
+        const vector = new Vector3(mouseX, mouseY, 1);
+        vector.unproject(this.camera);
+        this.raycaster.set(this.camera.position, vector.sub(this.camera.position).normalize());
+        const intersects = this.raycaster.intersectObject(this.planeFaders);
+        this.planeFaders.position.copy(intersects[0].point);
+        this.MouseEventStart(mouseX, mouseY);
+    }
 
     private AddMixer(): void {
         new GLTFLoader().load('models/mixer.glb', (gltf) => {
