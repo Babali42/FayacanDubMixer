@@ -53,11 +53,15 @@ class Game {
         soundService.LoadSounds();
     }
 
+    randomIntFromInterval(min : number , max : number) : number{ // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+
 
     createScene(): void {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100);
-        this.camera.position.set(1.3250406408110678, 104.88500303402239, 20.99895565347296);
+        this.camera.position.set(1.3250406408110678, 50, this.randomIntFromInterval(-10,30));
 
 
         const canvas = document.getElementById("c") as HTMLCanvasElement;
@@ -223,7 +227,8 @@ class Game {
             const boxSize = box.getSize(new THREE.Vector3()).length();
             //const boxCenter = box.getCenter(new THREE.Vector3());
             const boxCenter = new THREE.Vector3(1.3553901638776724, -6.662529599268561, -2.3002362037373625);
-
+            
+            
             this.camera.near = boxSize / 100;
             this.camera.far = boxSize * 100;
 
