@@ -203,6 +203,9 @@ class Game {
 
     MouseEventEnd() {
         this.controls.enabled = true;
+        this.controls.enableRotate = false;
+        this.controls.enableZoom = true;
+        this.controls.update();
         this.selectedFader = null;
         this.selectedKnob = null;
         this.offset = new THREE.Vector3;
